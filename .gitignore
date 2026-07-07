@@ -1,0 +1,17 @@
+node_modules/
+logs/
+.server.pid
+.local/
+dist/
+build/
+*.zip
+*.tar.gz
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+npm-debug.log
+yarn-error.log

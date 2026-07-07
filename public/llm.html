@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM 配置</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; padding: 0; background: #0b1020; color: #e8ecff; }
+      header { padding: 16px 20px; background: #0f1733; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+      a { color: #9fb2ff; text-decoration: none; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 16px 20px; }
+      .card { background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.045)); border: 1px solid rgba(255,255,255,.10); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: 0 12px 28px rgba(0,0,0,.22); }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      input, select, button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: #e8ecff; padding: 8px 10px; border-radius: 10px; }
+      button { cursor: pointer; }
+      button.primary { background: #2f5cff; border-color: rgba(255,255,255,.18); }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New"; font-size: 12px; }
+      .muted { color: rgba(232,236,255,.70); }
+      .pill { display: inline-flex; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); font-size: 12px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .title { font-size: 14px; font-weight: 650; }
+      .ok { color: #9effc1; }
+      .bad { color: #ffb0b0; }
+      .provider-card { position: relative; overflow: hidden; }
+      .provider-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at top right, var(--provider-glow), transparent 38%); pointer-events: none; }
+      .provider-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .provider-brand { display: flex; align-items: center; gap: 12px; }
+      .provider-logo { width: 42px; height: 42px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; letter-spacing: .08em; color: white; background: var(--provider-bg); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 10px 24px rgba(0,0,0,.22); }
+      .provider-name { font-size: 16px; font-weight: 700; text-transform: capitalize; }
+      .provider-sub { font-size: 12px; color: rgba(232,236,255,.68); }
+      .kv { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .kv .pill { background: rgba(7,10,20,.34); }
+      .pill-warn { background: rgba(255, 170, 0, .2); border-color: rgba(255, 170, 0, .4); color: #ffcc4d; }
+      .pill-danger { background: rgba(255, 80, 80, .2); border-color: rgba(255, 80, 80, .4); color: #ff8080; }
+      .tip-box { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(8, 12, 24, .34); border: 1px solid rgba(255,255,255,.06); }
+      .tip-warning { background: rgba(255, 170, 0, .1); border-color: rgba(255, 170, 0, .3); color: #ffcc4d; }
+      .test-box { margin-top: 10px; min-height: 18px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <div class="title">LLM 配置与连接测试</div>
+        <span class="pill" id="statusPill">-</span>
+      </div>
+      <div class="row">
+        <button id="testAllBtn" style="background:#2563eb;border-color:rgba(255,255,255,.18);">一键测试</button>
+        <a href="/">返回对局页面</a>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="card">
+        <div class="muted">
+          这里配置的是 Provider 级别的 BASE_URL / API_KEY / MODEL（不会在接口返回中回显 API_KEY）。
+          配置会保存到本机 <span class="mono">.local/llm-config.json</span>（请勿提交到仓库）。
+        </div>
+      </div>
+
+      <div id="providerGrid" class="grid"></div>
+
+      <!-- 添加自定义模型卡片 -->
+      <div id="addCustomCard" class="card" style="border: 2px dashed rgba(47,92,255,.45);">
+        <div class="provider-head">
+          <div class="provider-brand">
+            <div class="provider-logo mono" style="background: linear-gradient(135deg, #2f5cff, #7d4dff);">+</div>
+            <div>
+              <div class="provider-name">添加自定义模型</div>
+              <div class="provider-sub">输入服务商信息并保存</div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px; gap:10px;">
+          <input id="customProviderName" placeholder="服务商名称（英文字母/数字/-/_）" style="flex:1" />
+          <input id="customBaseUrl" placeholder="BASE_URL（OpenAI 兼容根地址）" style="flex:2" />
+          <input id="customModel" placeholder="MODEL（模型名称）" style="flex:1" />
+          <input id="customApiKey" placeholder="API_KEY" type="password" style="flex:1" />
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button id="addCustomBtn" class="primary">添加并保存</button>
+          <button id="clearCustomFormBtn">清空</button>
+        </div>
+        <div id="customMsg" class="muted mono" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <footer style="width:100%;text-align:center;padding:16px;font-size:12px;color:rgba(232,236,255,.30);">作者：无涯 &copy; 2026 Avalon Agent Arena</footer>
+
+    <script type="module" src="/llm.js"></script>
+  </body>
+</html>

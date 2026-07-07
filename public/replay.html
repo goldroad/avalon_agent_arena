@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avalon Arena - 对局回放</title>
+    <style>
+      :root { color-scheme: dark; }
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        margin: 0; padding: 0; min-height: 100vh;
+        background: #070c1a;
+        background-image:
+          radial-gradient(ellipse 80% 60% at 50% -10%, rgba(47,92,255,.15) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 80% 90%, rgba(120,60,255,.08) 0%, transparent 50%);
+        color: #e8ecff;
+      }
+
+      header {
+        padding: 14px 20px; background: #0f1733;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        display: flex; gap: 12px; align-items: center; justify-content: space-between;
+      }
+      a { color: #9fb2ff; text-decoration: none; }
+      .pill {
+        display: inline-flex; padding: 3px 10px; border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);
+        font-size: 12px; color: #b0baff; text-decoration: none; transition: .15s;
+      }
+      .pill:hover { background: rgba(255,255,255,.10); color: #fff; }
+
+      .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+      /* === 历史对局列表 === */
+      .history-list { display: flex; flex-direction: column; gap: 10px; }
+      .history-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 18px;
+        background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+        border-radius: 12px; cursor: pointer; transition: .15s;
+      }
+      .history-item:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.15); transform: translateY(-1px); }
+      .history-info { display: flex; flex-direction: column; gap: 6px; }
+      .history-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .history-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+      .card {
+        background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.08);
+        border-radius: 14px; padding: 20px; margin-bottom: 16px;
+      }
+      .card-title {
+        font-size: 15px; font-weight: 650; margin-bottom: 14px;
+        display: flex; align-items: center; gap: 8px;
+      }
+
+      button {
+        cursor: pointer; border: 1px solid rgba(255,255,255,.14);
+        background: rgba(255,255,255,.08); color: #e8ecff;
+        padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 550;
+        transition: .15s; white-space: nowrap;
+      }
+      button:hover { background: rgba(255,255,255,.13); }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+      button.primary {
+        background: linear-gradient(135deg, #2f5cff, #6e3fff);
+        border: none; color: #fff;
+      }
+      button.primary:hover { filter: brightness(1.1); }
+      button.danger { background: rgba(255,77,79,.15); border-color: rgba(255,77,79,.40); color: #ff4d4f; }
+      button.danger:hover { background: rgba(255,77,79,.25); }
+
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New"; font-size: 12px; }
+      .muted { color: rgba(232,236,255,.50); font-size: 12px; }
+      .alignment-good { color: #39d98a; font-weight: 750; }
+      .alignment-evil { color: #ff4d4f; font-weight: 750; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+      /* === 回放视图 === */
+      .replay-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+      }
+      .replay-title { font-size: 20px; font-weight: 700; }
+      .replay-result {
+        display: inline-flex; padding: 4px 14px; border-radius: 999px;
+        font-size: 14px; font-weight: 650;
+      }
+      .replay-result.good { background: rgba(57,217,138,.15); border: 1px solid rgba(57,217,138,.40); color: #39d98a; }
+      .replay-result.evil { background: rgba(255,77,79,.15); border: 1px solid rgba(255,77,79,.40); color: #ff4d4f; }
+      .replay-result.draw { background: rgba(255,180,50,.15); border: 1px solid rgba(255,180,50,.40); color: #ffb432; }
+
+      /* 播放控制栏 */
+      .playback-controls {
+        display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+        background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+        border-radius: 12px; margin-bottom: 16px; flex-wrap: wrap;
+        transition: all .25s ease;
+      }
+      .playback-controls.floating {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        border-radius: 0; margin-bottom: 0;
+        background: rgba(10,14,32,.92); backdrop-filter: blur(12px);
+        border: none; border-bottom: 1px solid rgba(255,255,255,.08);
+        padding: 8px 16px; justify-content: center;
+      }
+      .playback-btn-group {
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+      }
+      .playback-btn-label {
+        font-size: 10px; color: rgba(232,236,255,.50); line-height: 1;
+        white-space: nowrap; user-select: none; pointer-events: none;
+      }
+      .playback-btn {
+        width: 36px; height: 36px; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; font-size: 16px; padding: 0;
+      }
+      .playback-btn.play { background: rgba(47,92,255,.25); border-color: rgba(47,92,255,.50); color: #7ea8ff; }
+      .playback-btn.play:hover { background: rgba(47,92,255,.35); }
+      .playback-btn.play.active { background: rgba(57,217,138,.25); border-color: rgba(57,217,138,.50); color: #39d98a; }
+
+      .progress-bar-wrap {
+        flex: 1; min-width: 200px; display: flex; align-items: center; gap: 10px;
+      }
+      .progress-bar {
+        flex: 1; height: 6px; background: rgba(255,255,255,.10); border-radius: 3px;
+        cursor: pointer; position: relative;
+      }
+      .progress-fill {
+        height: 100%; background: linear-gradient(90deg, #2f5cff, #6e3fff);
+        border-radius: 3px; transition: width .1s;
+      }
+      .progress-label { font-size: 11px; color: rgba(232,236,255,.60); white-space: nowrap; }
+
+      .speed-select {
+        background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        color: #e8ecff; padding: 6px 10px; border-radius: 8px; font-size: 12px;
+        color-scheme: dark;
+      }
+      .speed-select option {
+        background: #1e2130; color: #e8ecff;
+      }
+
+      /* 双列布局 */
+      .replay-layout {
+        display: grid; grid-template-columns: 300px 1fr; gap: 16px;
+        min-height: calc(100vh - 280px);
+      }
+      @media (max-width: 900px) {
+        .replay-layout { grid-template-columns: 1fr; }
+      }
+
+      /* 玩家面板 */
+      .players-panel { overflow: auto; max-height: 70vh; }
+      .player-card {
+        background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+        border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+        transition: .2s;
+      }
+      .player-card.active { border-color: rgba(47,92,255,.50); box-shadow: 0 0 12px rgba(47,92,255,.20); }
+      .player-card .who {
+        display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px;
+      }
+      .player-card .avatar {
+        width: 28px; height: 28px; border-radius: 999px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 750; font-size: 12px; color: rgba(255,255,255,.95);
+        border: 1px solid rgba(255,255,255,.18); user-select: none;
+      }
+      .player-card .detail { margin-top: 6px; font-size: 12px; color: rgba(232,236,255,.60); line-height: 1.5; }
+
+      /* 时间线 */
+      .timeline-panel { overflow: auto; max-height: 70vh; }
+      .timeline { display: flex; flex-direction: column; gap: 8px; }
+      .event-item {
+        padding: 10px 14px; border-radius: 10px;
+        border: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.03);
+        transition: .3s; opacity: 0.35;
+      }
+      .event-item.visible { opacity: 1; }
+      .event-item.current {
+        border-color: rgba(47,92,255,.50);
+        background: rgba(47,92,255,.08);
+        box-shadow: 0 0 15px rgba(47,92,255,.15);
+      }
+      .event-head {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+      }
+      .event-head .who { font-weight: 700; font-size: 13px; }
+      .event-head .phase-tag {
+        display: inline-flex; padding: 1px 7px; border-radius: 999px;
+        font-size: 11px; background: rgba(100,80,220,.18);
+        border: 1px solid rgba(100,80,220,.30); color: #b8c4ff;
+      }
+      .event-body { font-size: 13px; line-height: 1.6; color: rgba(232,236,255,.88); white-space: pre-wrap; word-break: break-word; }
+      .thinking-box {
+        margin-top: 8px; padding: 8px 12px; border-radius: 8px;
+        background: rgba(57,217,138,.05); border: 1px solid rgba(57,217,138,.15);
+        font-size: 12px; color: #39d98a; line-height: 1.6;
+        white-space: pre-wrap; word-break: break-word;
+      }
+      .action-box {
+        margin-top: 6px; padding: 6px 10px; border-radius: 8px;
+        background: rgba(47,92,255,.10); border: 1px solid rgba(47,92,255,.25);
+        font-size: 12px; color: #9fb2ff;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New";
+      }
+
+      /* AI复盘面板 */
+      .ai-review-panel { margin-top: 16px; }
+      .ai-review-content {
+        padding: 16px; border-radius: 10px;
+        background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+        font-size: 14px; line-height: 1.8; color: rgba(232,236,255,.90);
+        white-space: pre-wrap; word-break: break-word; min-height: 100px;
+      }
+      .ai-review-loading {
+        display: flex; align-items: center; gap: 10px; padding: 20px;
+        color: rgba(232,236,255,.60); font-size: 14px;
+      }
+      .spinner {
+        width: 20px; height: 20px; border: 2px solid rgba(255,255,255,.15);
+        border-top-color: #5a7dff; border-radius: 50%;
+        animation: spin .8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* 空状态 */
+      .empty-state {
+        text-align: center; padding: 60px 20px; color: rgba(232,236,255,.40);
+      }
+      .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+      .empty-state .text { font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <a href="/" class="pill">返回首页</a>
+        <a href="/llm.html" class="pill">LLM配置</a>
+        <span class="pill" id="pageTitle">对局回放</span>
+      </div>
+      <div class="row">
+        <span class="pill mono" id="historyCount">共 0 场对局</span>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- 历史列表视图 -->
+      <div id="listView">
+        <div class="card">
+          <div class="card-title">历史对局</div>
+          <div id="historyList" class="history-list"></div>
+          <div id="emptyState" class="empty-state" style="display:none">
+            <div class="icon">&#127918;</div>
+            <div class="text">暂无历史对局记录</div>
+            <div class="muted" style="margin-top: 8px">完成一局游戏后，系统会自动保存回放数据</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 回放视图 -->
+      <div id="replayView" style="display:none">
+        <div class="replay-header">
+          <div class="row" style="gap: 16px">
+            <button id="backBtn">&#8592; 返回列表</button>
+            <span class="replay-title" id="replayTitle">-</span>
+            <span class="replay-result" id="replayResult">-</span>
+          </div>
+          <div class="row">
+            <span class="pill" id="scorePill">-</span>
+            <span class="muted" id="createdAtPill">-</span>
+          </div>
+        </div>
+
+        <!-- 播放控制 -->
+        <div class="playback-controls">
+          <div class="playback-btn-group">
+            <span class="playback-btn-label">上一步</span>
+            <button class="playback-btn" id="stepBackBtn" title="上一步 (←)">&#9664;</button>
+          </div>
+          <div class="playback-btn-group">
+            <span class="playback-btn-label" id="playBtnLabel">播放</span>
+            <button class="playback-btn play" id="playBtn" title="播放/暂停 (Space)">▶</button>
+          </div>
+          <div class="playback-btn-group">
+            <span class="playback-btn-label">下一步</span>
+            <button class="playback-btn" id="stepForwardBtn" title="下一步 (→)">&#9197;</button>
+          </div>
+          <div class="playback-btn-group">
+            <span class="playback-btn-label">跳结尾</span>
+            <button class="playback-btn" id="goEndBtn" title="跳到结束">⏭</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label" id="progressLabel">0 / 0</span>
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+          </div>
+          <select class="speed-select" id="speedSelect">
+            <option value="2000">0.5x</option>
+            <option value="1000" selected>1x</option>
+            <option value="500">2x</option>
+            <option value="250">4x</option>
+            <option value="100">10x</option>
+          </select>
+          <label style="font-size:12px; display:flex; align-items:center; gap:4px; color:rgba(232,236,255,.60)">
+            <input type="checkbox" id="autoThinking" checked style="accent-color:#5a7dff"> 显示思考
+          </label>
+          <label style="font-size:12px; display:flex; align-items:center; gap:4px; color:rgba(232,236,255,.60)">
+            <input type="checkbox" id="autoScroll" checked style="accent-color:#5a7dff"> 自动滚动
+          </label>
+        </div>
+
+        <!-- 场景描述 -->
+        <div class="card" style="margin-bottom: 16px">
+          <div class="card-title">场景描述</div>
+          <div class="muted" id="scenarioBox">-</div>
+        </div>
+
+        <!-- 双列：玩家 + 时间线 -->
+        <div class="replay-layout">
+          <div class="players-panel">
+            <div class="card">
+              <div class="card-title">玩家阵容</div>
+              <div id="playersList"></div>
+            </div>
+          </div>
+          <div class="timeline-panel">
+            <div class="card">
+              <div class="card-title">事件时间线</div>
+              <div class="timeline" id="timeline"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI复盘 -->
+        <div class="ai-review-panel">
+          <div class="card">
+            <div class="card-title">
+              <span>AI 复盘分析</span>
+              <button id="aiReviewBtn" class="primary" style="margin-left: auto">AI 复盘本局</button>
+            </div>
+            <div id="aiReviewContent" style="display:none"></div>
+            <div id="aiReviewLoading" style="display:none" class="ai-review-loading">
+              <div class="spinner"></div>
+              <span>AI 正在复盘分析中，请稍候...</span>
+            </div>
+            <div id="aiReviewEmpty" class="muted" style="padding: 12px 0">点击"AI 复盘本局"按钮，AI 将对本局比赛进行全面分析</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer style="width:100%;text-align:center;padding:16px;font-size:12px;color:rgba(232,236,255,.30);">作者：无涯 &copy; 2026 Avalon Agent Arena</footer>
+
+    <script type="module" src="/replay.js"></script>
+  </body>
+</html>

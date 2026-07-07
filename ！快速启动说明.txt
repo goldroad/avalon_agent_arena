@@ -1,0 +1,14 @@
+
+1、Windows，双击run.bat启动
+2、右上角——配置LLM模型（deepseek玩一局大概消耗几毛钱）
+3、回到首页——默认6个AI玩家，0个真人玩家
+4、“快速填充相同模型”。如果配置了很多个模型，也可以分配不同模型。
+5、“创建房间”——进入上帝视角，开始观看AI比赛
+6、回到首页，右上角可以观看对局回放
+
+如何使用免费模型：
+火山平台，同意采集数据，每个模型都有50万免费Token
+（把里面的模型都开通一下，就可以选择doubao随机分配模型，不用花钱）
+https://console.volcengine.com/ark/region:ark+cn-beijing/openManagement
+https://console.volcengine.com/ark/region:ark+cn-beijing/openManagement
+

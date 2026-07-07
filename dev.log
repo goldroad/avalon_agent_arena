@@ -1,0 +1,16 @@
+[2026-07-07 07:46:06] 项目初始化完成
+- 更新 .gitignore 文件，添加标准忽略项
+- 执行 git init 初始化仓库
+- 创建 dev.log 文件用于记录开发日志
+
+[2026-07-07 07:48:30] 安全检查：API Key 泄露检查完成
+- 在 .local/llm-config.json 中发现多个真实 API Key（deepseek、xiaomi、doubao、kimi、aliyun）
+- .local/ 目录已被 .gitignore 正确忽略，不会被提交到 git 仓库
+- README.md 中仅包含示例占位符（sk-xxxx），无真实密钥泄露
+
+[2026-07-07 07:55:20] 安全清理：删除包含敏感信息的压缩包
+- 删除 avalon_agent_arena-v0.1.zip（可能包含 .local/ 目录）
+- 删除 avalon_agent_arena-v0.2.zip（可能包含 .local/ 目录）
+- 删除 avalon_agent_arena-v0.3.zip（可能包含 .local/ 目录）
+- 删除 avalon_agent_arena-v0.4-八方网域学员专享.zip（确认包含 .local/ 目录，存在 API Key 泄露风险）
+- .gitignore 中已配置 *.zip 规则，未来新建压缩包不会被 git 跟踪

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>阿瓦隆玩法介绍</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #edf2ff;
+        background:
+          radial-gradient(circle at top, rgba(74, 118, 255, .28), transparent 42%),
+          radial-gradient(circle at bottom right, rgba(162, 89, 255, .18), transparent 38%),
+          #050917;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .brand {
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      .brand span { color: #7fa4ff; }
+      .nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .nav a {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.10);
+        color: #c8d4ff;
+        transition: background .2s ease, color .2s ease, border-color .2s ease;
+      }
+      .nav a:hover {
+        background: rgba(255,255,255,.12);
+        color: #fff;
+        border-color: rgba(255,255,255,.18);
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(19, 30, 74, .94), rgba(30, 18, 60, .94)),
+          rgba(255,255,255,.05);
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -40px -40px auto;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(128, 161, 255, .32), transparent 70%);
+        pointer-events: none;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.08);
+        color: #bcd0ff;
+        font-size: 12px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(34px, 5vw, 54px);
+        line-height: 1.05;
+      }
+      .lead {
+        max-width: 760px;
+        color: rgba(237, 242, 255, .78);
+        font-size: 16px;
+        line-height: 1.75;
+      }
+      .panel {
+        background: rgba(255,255,255,.05);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 22px;
+        padding: 22px;
+        backdrop-filter: blur(8px);
+      }
+      .panel h2,
+      .section h2 {
+        margin: 0 0 14px;
+        font-size: 22px;
+      }
+      .section {
+        margin-top: 20px;
+      }
+      .section p,
+      .section li,
+      .panel li {
+        color: rgba(237, 242, 255, .78);
+        line-height: 1.75;
+      }
+      ul, ol {
+        margin: 0;
+        padding-left: 18px;
+      }
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+      /* 表格样式 */
+      .config-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+      .config-table th,
+      .config-table td {
+        padding: 12px 14px;
+        border: 1px solid rgba(255,255,255,.10);
+        text-align: center;
+        color: rgba(237, 242, 255, .82);
+      }
+      .config-table th {
+        background: rgba(127, 164, 255, .12);
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .03em;
+      }
+      .config-table tr:nth-child(even) td {
+        background: rgba(255,255,255,.03);
+      }
+      .config-table tr:hover td {
+        background: rgba(127, 164, 255, .08);
+      }
+      .config-table .col-players {
+        font-weight: 700;
+        color: #fff;
+      }
+      .config-table .col-evil {
+        color: #ff8a8a;
+      }
+      .config-table .col-good {
+        color: #8aff9e;
+      }
+      .config-table .col-note {
+        font-size: 12px;
+        color: rgba(237, 242, 255, .6);
+        text-align: left;
+      }
+      .timeline {
+        display: grid;
+        gap: 12px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.08);
+      }
+      .step-index {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #2f5cff, #8552ff);
+        color: #fff;
+        font-weight: 800;
+      }
+      .role-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .role-card {
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(10, 16, 38, .72);
+        border: 1px solid rgba(255,255,255,.08);
+      }
+      .role-card strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 15px;
+        color: #fff;
+      }
+      .role-card p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .tag {
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(127, 164, 255, .12);
+        border: 1px solid rgba(127, 164, 255, .22);
+        color: #c9d9ff;
+        font-size: 11px;
+      }
+      .tag.tag-evil {
+        background: rgba(255, 100, 100, .12);
+        border-color: rgba(255, 100, 100, .28);
+        color: #ffb0b0;
+      }
+      footer {
+        margin-top: 28px;
+        text-align: center;
+        color: rgba(237, 242, 255, .42);
+        font-size: 12px;
+      }
+      @media (max-width: 900px) {
+        .section-grid,
+        .role-grid {
+          grid-template-columns: 1fr;
+        }
+        .config-table { font-size: 12px; }
+        .config-table th, .config-table td { padding: 8px 6px; }
+      }
+      @media (max-width: 640px) {
+        .shell { width: min(100% - 20px, 1120px); padding-top: 18px; }
+        .topbar { align-items: flex-start; flex-direction: column; }
+        .hero { padding: 22px 18px; border-radius: 20px; }
+        .panel { padding: 18px; border-radius: 18px; }
+        .step { grid-template-columns: 1fr; }
+        .role-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="topbar">
+        <a class="brand" href="/"><span>Avalon</span> Arena</a>
+        <div class="nav">
+          <a href="/">返回首页</a>
+          <a href="/llm.html">LLM 配置</a>
+        </div>
+      </div>
+
+      <!-- 一句话说明 -->
+      <section class="hero">
+        <div class="eyebrow">Social Deduction Guide</div>
+        <h1>阿瓦隆玩法介绍</h1>
+        <p class="lead">
+          阿瓦隆是一款<strong>阵营推理桌游</strong>。玩家分为好人和坏人两个阵营，坏人隐藏身份混在好人中。
+          好人需要完成 3 次任务，坏人需要破坏 3 次任务。即使好人赢了任务，坏人还有一次机会刺杀关键角色来翻盘。
+        </p>
+      </section>
+
+      <!-- 核心概念：3 个面板 -->
+      <section class="section">
+        <div class="section-grid">
+          <div class="panel">
+            <h2>怎么赢？</h2>
+            <ul>
+              <li><strong>好人赢：</strong>成功完成 3 次任务</li>
+              <li><strong>坏人赢：</strong>破坏 3 次任务，或者在终局成功刺杀梅林</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h2>每回合做什么？</h2>
+            <ul>
+              <li><strong>1.</strong> 队长组队 → 提议出征队员</li>
+              <li><strong>2.</strong> 全员投票 → 同意或反对这个队伍</li>
+              <li><strong>3.</strong> 执行任务 → 队员秘密投成功或失败</li>
+              <li><strong>4.</strong> 公开结果 → 看任务是否成功</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h2>信息差异</h2>
+            <ul>
+              <li><strong>坏人：</strong>互相知道谁是同伴</li>
+              <li><strong>梅林：</strong>知道谁是坏人，但不能暴露</li>
+              <li><strong>派西维尔：</strong>知道谁"像梅林"，但分不清真假</li>
+              <li><strong>忠臣：</strong>什么都不知道，纯靠推理</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 角色介绍 -->
+      <section class="section">
+        <h2>角色一览</h2>
+        <div class="role-grid">
+          <div class="role-card">
+            <strong>梅林 <span class="tag">好人</span></strong>
+            <p>知道谁是坏人。要暗中引导好人，但不能太明显，否则会被刺客盯上。</p>
+          </div>
+          <div class="role-card">
+            <strong>派西维尔 <span class="tag">好人</span></strong>
+            <p>知道哪两个人中有一个是梅林（另一个是莫甘娜）。要保护真梅林。</p>
+          </div>
+          <div class="role-card">
+            <strong>忠臣 <span class="tag">好人</span></strong>
+            <p>没有任何额外信息。靠观察发言、投票和任务结果来判断谁是坏人。</p>
+          </div>
+          <div class="role-card">
+            <strong>刺客 <span class="tag tag-evil">坏人</span></strong>
+            <p>知道同伴是谁。任务失败要靠他，终局刺杀梅林也要靠他。</p>
+          </div>
+          <div class="role-card">
+            <strong>莫甘娜 <span class="tag tag-evil">坏人</span></strong>
+            <p>在派西维尔眼里长得像梅林。用来迷惑派西维尔、保护真正的坏人。</p>
+          </div>
+          <div class="role-card">
+            <strong>爪牙 <span class="tag tag-evil">坏人</span></strong>
+            <p>普通坏人。配合队友投票、发言，帮坏人阵营制造混乱。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 人数配置表格 -->
+      <section class="section">
+        <h2>不同人数的配置</h2>
+        <div class="panel">
+          <p style="margin-bottom:12px;">人数越多，坏人越多，任务也越难。7 人及以上时，第 4 轮任务需要 2 张失败票才会失败。</p>
+          <table class="config-table">
+            <thead>
+              <tr>
+                <th>人数</th>
+                <th>好人阵营</th>
+                <th>坏人阵营</th>
+                <th>各轮任务人数</th>
+                <th>第4轮失败票</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-players">5 人</td>
+                <td class="col-good">梅林 + 2 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜</td>
+                <td>2 / 3 / 2 / 3 / 3</td>
+                <td>1 张</td>
+                <td class="col-note">最紧凑，没有派西维尔</td>
+              </tr>
+              <tr>
+                <td class="col-players">6 人</td>
+                <td class="col-good">梅林 + 派西维尔 + 2 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜</td>
+                <td>2 / 3 / 4 / 3 / 4</td>
+                <td>1 张</td>
+                <td class="col-note">派西维尔加入，博弈更丰富</td>
+              </tr>
+              <tr>
+                <td class="col-players">7 人</td>
+                <td class="col-good">梅林 + 派西维尔 + 3 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜</td>
+                <td>2 / 3 / 3 / 4 / 4</td>
+                <td>2 张</td>
+                <td class="col-note">首次出现双失败规则</td>
+              </tr>
+              <tr>
+                <td class="col-players">8 人</td>
+                <td class="col-good">梅林 + 派西维尔 + 3 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜 + 爪牙</td>
+                <td>3 / 4 / 4 / 5 / 5</td>
+                <td>2 张</td>
+                <td class="col-note">坏人增加到 3 人</td>
+              </tr>
+              <tr>
+                <td class="col-players">9 人</td>
+                <td class="col-good">梅林 + 派西维尔 + 4 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜 + 爪牙</td>
+                <td>3 / 4 / 4 / 5 / 5</td>
+                <td>2 张</td>
+                <td class="col-note">公共信息更多，推理链更长</td>
+              </tr>
+              <tr>
+                <td class="col-players">10 人</td>
+                <td class="col-good">梅林 + 派西维尔 + 5 忠臣</td>
+                <td class="col-evil">刺客 + 莫甘娜 + 爪牙</td>
+                <td>3 / 4 / 4 / 5 / 5</td>
+                <td>2 张</td>
+                <td class="col-note">最大场面，配合要求最高</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 新手提示 -->
+      <section class="section">
+        <div class="section-grid">
+          <div class="panel">
+            <h2>好人怎么玩？</h2>
+            <ul>
+              <li><strong>梅林：</strong>暗中引导，不要直接点名坏人</li>
+              <li><strong>派西维尔：</strong>保护真梅林，注意莫甘娜的伪装</li>
+              <li><strong>忠臣：</strong>多看投票记录和任务结果，不要只听发言</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h2>坏人怎么玩？</h2>
+            <ul>
+              <li><strong>前期：</strong>表现得像好人，获得信任</li>
+              <li><strong>中期：</strong>争取加入关键任务队伍</li>
+              <li><strong>后期：</strong>记住梅林的线索，为刺杀做准备</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer>Avalon Agent Arena &copy; 2026 | 作者：无涯</footer>
+    </div>
+  </body>
+</html>

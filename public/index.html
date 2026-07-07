@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avalon Multi-Agent Arena</title>
+    <style>
+      :root { color-scheme: dark; }
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        margin: 0; padding: 0; min-height: 100vh;
+        background: #070c1a;
+        background-image:
+          radial-gradient(ellipse 80% 60% at 50% -10%, rgba(47,92,255,.18) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 80% 90%, rgba(120,60,255,.10) 0%, transparent 50%);
+        color: #e8ecff;
+        display: flex; flex-direction: column; align-items: center;
+      }
+
+      /* 顶部导航 */
+      header {
+        width: 100%; max-width: 1200px; padding: 20px 32px;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .logo { font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+      .logo span { color: #5a7dff; }
+      .nav-links { display: flex; gap: 10px; }
+      .nav-links a {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 6px 14px; border-radius: 8px;
+        background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+        color: #b0baff; font-size: 13px; text-decoration: none; transition: .15s;
+      }
+      .nav-links a:hover { background: rgba(255,255,255,.10); color: #fff; }
+
+      /* 主体居中 */
+      .hero {
+        flex: 1; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 20px 20px 40px; width: 100%; max-width: 680px;
+      }
+      .hero-title {
+        font-size: 36px; font-weight: 800; text-align: center;
+        background: linear-gradient(135deg, #8fb0ff 0%, #a78bfa 50%, #f0abfc 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+      }
+      .hero-sub {
+        font-size: 14px; color: rgba(232,236,255,.55); text-align: center; margin-bottom: 32px;
+      }
+
+      /* 主卡片 */
+      .card {
+        width: 100%;
+        background: rgba(255,255,255,.045);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(12px);
+      }
+      .card-title {
+        font-size: 15px; font-weight: 650; margin-bottom: 14px;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .card-title .icon { font-size: 18px; }
+
+      /* 表单控件 */
+      .field-row {
+        display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
+      }
+      .field-row:last-child { margin-bottom: 0; }
+      .field-row.wrap { flex-wrap: wrap; align-items: stretch; }
+      label.field-label {
+        font-size: 13px; color: rgba(232,236,255,.65); min-width: 52px; flex-shrink: 0;
+      }
+      input[type="number"], input[type="text"], input[type="password"], select, textarea {
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        color: #e8ecff; padding: 9px 12px; border-radius: 8px;
+        font-size: 14px; outline: none; transition: .15s;
+      }
+      input:focus, select:focus { border-color: #5a7dff; }
+      input[type="number"] { width: 72px; }
+      input::placeholder, textarea::placeholder { color: rgba(232,236,255,.30); }
+      select { cursor: pointer; }
+      select option { background: #0b1024; color: #e8ecff; }
+
+      button {
+        cursor: pointer; border: 1px solid rgba(255,255,255,.14);
+        background: rgba(255,255,255,.08); color: #e8ecff;
+        padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 550;
+        transition: .15s; white-space: nowrap;
+      }
+      button:hover { background: rgba(255,255,255,.13); }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+      button.primary {
+        background: linear-gradient(135deg, #2f5cff, #6e3fff);
+        border: none; color: #fff; padding: 11px 28px; font-size: 15px;
+      }
+      button.primary:hover { filter: brightness(1.1); }
+
+      .muted { color: rgba(232,236,255,.50); font-size: 12px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .field-grow { flex: 1 1 220px; min-width: 0; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New"; font-size: 12px; }
+      .fixed-model {
+        display: inline-flex; align-items: center; min-height: 40px;
+        padding: 0 12px; border-radius: 8px;
+        background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        color: #dbe4ff;
+      }
+      .pill {
+        display: inline-flex; padding: 2px 8px; border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); font-size: 12px;
+      }
+      .action-row {
+        display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+      }
+      .action-row .primary { margin-left: auto; }
+      .log-toolbar {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .log-split {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      }
+      .log-box {
+        min-height: 220px;
+        background: rgba(5, 10, 26, .78);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .log-box-title {
+        font-size: 12px; color: rgba(232,236,255,.72); margin-bottom: 10px;
+      }
+      .log-output {
+        margin: 0;
+        max-height: 280px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #c9d5ff;
+        line-height: 1.5;
+      }
+
+      /* 角色配置网格 */
+      .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+      .role-card {
+        background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+        border-radius: 10px; padding: 10px 12px;
+      }
+      .role-card .role-name {
+        font-size: 12px; font-weight: 600; margin-bottom: 8px;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .role-card select, .role-card input { width: 100%; font-size: 12px; padding: 6px 8px; }
+      .role-card .field { margin-top: 6px; }
+
+      /* 底部 */
+      footer {
+        width: 100%; text-align: center; padding: 16px;
+        font-size: 12px; color: rgba(232,236,255,.30);
+      }
+
+      /* 进行中的对局列表 */
+      .active-room-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 14px; margin-bottom: 8px;
+        background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+        border-radius: 10px; transition: .15s;
+      }
+      .active-room-item:last-child { margin-bottom: 0; }
+      .active-room-item:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+      .active-room-info {
+        display: flex; flex-direction: column; gap: 4px; min-width: 0;
+      }
+      .active-room-meta {
+        display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      }
+      .active-room-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+      /* 响应式 */
+      @media (max-width: 700px) {
+        .role-grid { grid-template-columns: 1fr; }
+        .hero-title { font-size: 26px; }
+        .card { padding: 18px 16px; }
+        .field-row { align-items: stretch; }
+        .field-row > button { width: 100%; }
+        .action-row .primary { width: 100%; margin-left: 0; }
+        .log-split { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Avalon <span>Arena</span></div>
+      <div class="nav-links">
+        <a href="/avalon-guide.html">阿瓦隆玩法介绍</a>
+        <a href="/llm.html">LLM 配置</a>
+        <a href="/replay.html">对局回放</a>
+        <a href="#" id="joinRoomLink">加入房间</a>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-title">多 Agent 阿瓦隆对局</div>
+      <div class="hero-sub">支持多人 AI / 真人混开、多模型接入、上帝视角、回放复盘</div>
+
+      <!-- 进行中的对局 -->
+      <div class="card" id="activeRoomsCard" style="display: none">
+        <div class="card-title"><span class="icon">&#128293;</span> 进行中的对局</div>
+        <div id="activeRoomsList"></div>
+      </div>
+
+      <!-- 基本设置 -->
+      <div class="card">
+        <div class="card-title"><span class="icon">&#9876;</span> 快速开局</div>
+        <div class="field-row">
+          <label class="field-label">玩家数</label>
+          <input id="playerCount" type="number" min="5" max="10" value="6" />
+          <label class="field-label">真人数</label>
+          <input id="humanCount" type="number" min="0" max="10" value="0" />
+          <span class="muted" style="margin-left: 8px">（剩余为 AI）</span>
+        </div>
+        <div class="muted" style="margin-top: 8px">
+          角色将随机分配。创建后进入对局界面，可切换上帝/路人视角。
+        </div>
+      </div>
+
+      <!-- 全局模型 -->
+      <div class="card">
+        <div class="card-title"><span class="icon">&#9881;</span> 全局模型</div>
+        <div class="muted" style="margin-bottom: 12px">全局模型将用于系统角色、复盘、游戏逻辑、模型兜底等。点击"随机分配不同模型"时，会优先使用你在 LLM 配置页中已配置好的不同 provider 模型，数量不够时才回退到全局模型或允许重复。</div>
+        <div class="field-row wrap">
+          <label class="field-label">Provider</label>
+          <select id="defaultProvider" style="min-width:120px">
+            <option value="doubao">doubao</option>
+          </select>
+          <label class="field-label">Model</label>
+          <select id="defaultModel" class="field-grow" style="min-width:160px">
+            <option value="doubao-seed-2-0-pro-260215">doubao-seed-2-0-pro-260215</option>
+          </select>
+          <label class="field-label">温度</label>
+          <input id="defaultTemp" type="number" step="0.1" min="0" max="2" value="0.6" style="width:72px" />
+          <button id="fillRolesBtn">快速填充相同模型</button>
+          <button id="randomizeRolesBtn">随机分配不同模型</button>
+        </div>
+      </div>
+
+      <!-- 角色模型配置 -->
+      <div class="card">
+        <div class="card-title"><span class="icon">&#127919;</span> 角色模型配置</div>
+        <div class="muted" style="margin-bottom: 4px">每个角色独立选择 Provider / Model / 温度。同一角色类型会复用同一配置。</div>
+        <div id="roleConfigBox" class="role-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="action-row">
+          <div class="muted">确认人数与模型后再创建房间；若创建失败，可先查看下方运行日志。</div>
+          <button id="createBtn" class="primary">创建房间</button>
+        </div>
+      </div>
+
+      <div class="card" id="joinLinksCard" style="display: none">
+        <div class="card-title"><span class="icon">&#128279;</span> 进入链接</div>
+        <div class="muted" style="margin-bottom: 12px">房间已创建：<span id="createdRoomId" class="pill mono">-</span> 点击按钮直接进入对应视角。</div>
+        <div class="field-row wrap" id="playerLinkRow">
+          <label class="field-label">玩家</label>
+          <select id="playerViewSelect"></select>
+          <button id="enterPlayerBtn">进入玩家视角</button>
+          <a id="playerViewLink" class="pill mono" href="#" target="_blank" rel="noopener">新标签页打开</a>
+        </div>
+        <div class="row">
+          <button id="enterSpectatorBtn">进入路人视角</button>
+          <a id="spectatorViewLink" class="pill mono" href="#" target="_blank" rel="noopener">路人新标签页</a>
+          <button id="enterGodBtn">进入上帝视角</button>
+          <a id="godViewLink" class="pill mono" href="#" target="_blank" rel="noopener">上帝新标签页</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="icon">&#128221;</span> 运行日志</div>
+        <div class="log-toolbar">
+          <div class="muted">展示首页前端运行记录，以及服务端最新日志尾部，方便定位配置或接口问题。</div>
+          <div class="row">
+            <button id="refreshLogsBtn">刷新日志</button>
+          </div>
+        </div>
+        <div class="log-split">
+          <div class="log-box">
+            <div class="log-box-title">页面运行日志</div>
+            <pre id="clientLogOutput" class="log-output mono">等待日志输出...</pre>
+          </div>
+          <div class="log-box">
+            <div class="log-box-title">服务端日志</div>
+            <pre id="serverLogOutput" class="log-output mono">等待日志输出...</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Avalon Multi-Agent Arena &mdash; 高阶多 Agent 协作 + 欺骗博弈演示 | 作者：无涯</footer>
+
+    <script type="module" src="/home.js"></script>
+  </body>
+</html>
