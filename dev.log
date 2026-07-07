@@ -14,3 +14,11 @@
 - 删除 avalon_agent_arena-v0.3.zip（可能包含 .local/ 目录）
 - 删除 avalon_agent_arena-v0.4-八方网域学员专享.zip（确认包含 .local/ 目录，存在 API Key 泄露风险）
 - .gitignore 中已配置 *.zip 规则，未来新建压缩包不会被 git 跟踪
+
+[2026-07-07 14:00:20] 更新页脚：添加 GitHub 仓库地址链接
+- 修改 index.html 页脚，添加 GitHub 链接
+- 修改 game.html 页脚，添加 GitHub 链接
+- 修改 llm.html 页脚，添加 GitHub 链接
+- 修改 replay.html 页脚，添加 GitHub 链接
+- 修改 avalon-guide.html 页脚，添加 GitHub 链接
+- GitHub 地址：https://github.com/goldroad/avalon_agent_arena
