@@ -16,3 +16,8 @@
 - 强制添加 `.local/llm-config.json.example` 到 git（.gitignore 排除规则未生效）
 - 提交并推送到 GitHub 远程仓库
 - 切换远程协议从 HTTPS 到 SSH 以解决网络连接问题
+
+[2026-07-07 22:30:00] 更新 README.md：添加项目预览图
+- 在功能介绍后添加"预览"章节
+- 添加三张预览图：首页、对局页面、对局回放
+- 图片路径：images/pic1.jpg、images/pic2.jpg、images/pic3.jpg
