@@ -193,9 +193,15 @@
 
 ## 快速启动
 
+请务必查看"！快速启动说明.txt"
+
+在.local目录，复制llm-config.json.example为llm-config.json
+
+
+
 方式 A：使用脚本（推荐）
 
-1. 双击 `run.bat`（或在 PowerShell 中执行 `.\run.bat`）
+1. 双击 `restart.bat`（或在 PowerShell 中执行 `.\restart.bat`）
 2. 打开：`http://127.0.0.1:8787/`
 
 停止：`.\stop.bat`  

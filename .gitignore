@@ -2,6 +2,7 @@ node_modules/
 logs/
 .server.pid
 .local/
+!.local/llm-config.json.example
 dist/
 build/
 *.zip
