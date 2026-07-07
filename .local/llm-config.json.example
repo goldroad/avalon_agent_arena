@@ -1,0 +1,46 @@
+{
+  "custom": {
+    "baseUrl": "https://api.deepseek.com",
+    "apiKey": "",
+    "model": "deepseek-v4-flash"
+  },
+  "xiaomi": {
+    "baseUrl": "https://api.xiaomimimo.com/v1",
+    "apiKey": "",
+    "model": "mimo-v2.5"
+  },
+  "doubao": {
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    "apiKey": "",
+    "model": "doubao-seed-2-0-pro-260215",
+    "models": [
+      "deepseek-v4-flash-260425",
+      "deepseek-v4-pro-260425",
+      "doubao-seed-2-0-code-preview-260215",
+      "doubao-seed-1-8-251228",
+      "doubao-seed-2-0-lite-260428",
+      "doubao-seed-2-0-mini-260428",
+      "doubao-seed-2-0-pro-260215",
+      "doubao-seed-character-251128",
+      "glm-4-7-251222",
+      "deepseek-v3-2-251201",
+      "doubao-seed-1-6-flash-250828",
+      "doubao-seed-1-6-251015"
+    ]
+  },
+  "kimi": {
+    "baseUrl": "https://api.moonshot.cn/v1",
+    "apiKey": "",
+    "model": "kimi-k2.6"
+  },
+  "deepseek": {
+    "baseUrl": "https://api.deepseek.com",
+    "apiKey": "",
+    "model": "deepseek-v4-flash"
+  },
+  "aliyun": {
+    "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "apiKey": "",
+    "model": "qwen3.6-plus"
+  }
+}
